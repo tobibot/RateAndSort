@@ -30,6 +30,8 @@ func init() {
 }
 
 func StartRating() {
+	_ = godotenv.Load(envFileName)
+
 	entries, err := readEvaluationFile()
 	if err != nil {
 		log.Fatal()
@@ -77,8 +79,6 @@ func playTheGame(stocks []stock) {
 }
 
 func writeEvaluationFile(data []stock) (err error) {
-	_ = godotenv.Load(envFileName)
-
 	finFolder := os.Getenv("FINFOLDER")
 	filePath := path.Join(finFolder, environment, "config", inputFileName)
 
@@ -96,8 +96,6 @@ func writeEvaluationFile(data []stock) (err error) {
 }
 
 func readEvaluationFile() ([]stock, error) {
-	_ = godotenv.Load(envFileName)
-
 	finFolder := os.Getenv("FINFOLDER")
 	filePath := path.Join(finFolder, environment, "config", inputFileName)
 
