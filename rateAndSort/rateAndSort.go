@@ -48,8 +48,8 @@ func playTheGame(stocks []stock) {
 			}
 			stock1 := &stocks[i]
 			stock2 := &stocks[i+1]
-			msg := fmt.Sprintf("Which one do you prefer?\n"+
-				"\t(a) %s or\n"+
+			msg := fmt.Sprintf("\nWhich one do you prefer?\n"+
+				"\t(a) %s\n"+
 				"\t(b) %s\n", stock1.Name, stock2.Name)
 			fmt.Println(msg)
 
