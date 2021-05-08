@@ -17,6 +17,8 @@ var (
 	inputFileName = "evaluation.json" // todo args / flags
 	environment   = "prod"
 	envFileName   = environment + ".env"
+	finFolder     = ""
+	filePath      = ""
 )
 
 type stock struct {
@@ -31,6 +33,8 @@ func init() {
 
 func StartRating() {
 	_ = godotenv.Load(envFileName)
+	finFolder = os.Getenv("FINFOLDER")
+	filePath = path.Join(finFolder, environment, "config", inputFileName)
 
 	entries, err := readEvaluationFile()
 	if err != nil {
@@ -79,9 +83,6 @@ func playTheGame(stocks []stock) {
 }
 
 func writeEvaluationFile(data []stock) (err error) {
-	finFolder := os.Getenv("FINFOLDER")
-	filePath := path.Join(finFolder, environment, "config", inputFileName)
-
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
@@ -96,9 +97,6 @@ func writeEvaluationFile(data []stock) (err error) {
 }
 
 func readEvaluationFile() ([]stock, error) {
-	finFolder := os.Getenv("FINFOLDER")
-	filePath := path.Join(finFolder, environment, "config", inputFileName)
-
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		os.Create(filePath)
 		return make([]stock, 0), err
