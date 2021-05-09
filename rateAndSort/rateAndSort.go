@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"sort"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -71,11 +72,11 @@ func playTheGame(stocks []stock) {
 				stock2.Value += 1
 				writeEvaluationFile(stocks)
 			} else if text == "x" || text == "quit" || text == "exit" {
-				//sort(stocks) // Todo
-				//writeEvaluationFile(stocks)
+				sortStocks(stocks)
+				writeEvaluationFile(stocks)
 				return
 			} else {
-				fmt.Println("bad input")
+				fmt.Println("bad input - no rating made")
 			}
 		}
 	}
@@ -83,6 +84,7 @@ func playTheGame(stocks []stock) {
 }
 
 func writeEvaluationFile(data []stock) (err error) {
+
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
@@ -93,6 +95,8 @@ func writeEvaluationFile(data []stock) (err error) {
 	encoder.SetIndent("", "\t")
 
 	err = encoder.Encode(data)
+
+	randomize(data)
 	return err
 }
 
@@ -127,7 +131,18 @@ func readEvaluationFile() ([]stock, error) {
 	return data, nil
 }
 
-func randomize(sliceIn []stock) {
+func randomize(data []stock) {
 	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(sliceIn), func(i, j int) { sliceIn[i], sliceIn[j] = sliceIn[j], sliceIn[i] })
+	rand.Shuffle(len(data), func(i, j int) { data[i], data[j] = data[j], data[i] })
+}
+
+func sortStocks(data []stock) {
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[i].Value > data[j].Value
+	})
+}
+
+func sortThenQuit(data []stock) {
+	sortStocks(data)
+	writeEvaluationFile(data)
 }
