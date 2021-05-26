@@ -63,24 +63,53 @@ func playTheGame(stocks []stock) {
 			text := ""
 			fmt.Scanln(&text)
 
-			if text == "a" {
-				stock1.Value += 1
-				stock2.Value -= 1
-				writeEvaluationFile(stocks)
-			} else if text == "b" {
-				stock1.Value -= 1
-				stock2.Value += 1
-				writeEvaluationFile(stocks)
-			} else if text == "x" || text == "quit" || text == "exit" {
+			switch text {
+			case "aa":
+				makeEvaluation(stocks, stock1, stock2, 2)
+				break
+			case "a":
+				makeEvaluation(stocks, stock1, stock2, 1)
+				break
+			case "bb":
+				makeEvaluation(stocks, stock2, stock1, 2)
+				break
+			case "b":
+				makeEvaluation(stocks, stock2, stock1, 1)
+				break
+			case "x":
+				fallthrough
+			case "quit":
+				fallthrough
+			case "exit":
 				sortStocks(stocks)
 				writeEvaluationFile(stocks)
 				return
-			} else {
+			default:
 				fmt.Println("bad input - no rating made")
 			}
 		}
 	}
 
+}
+
+func makeEvaluation(stocks []stock, i *stock, d *stock, v int) {
+	i.increaseBy(v)
+	d.decreaseBy(v)
+	writeEvaluationFile(stocks)
+}
+
+func (s *stock) decreaseBy(b int) {
+	s.Value -= b
+	if s.Value < 0 {
+		s.Value = 0
+	}
+}
+
+func (s *stock) increaseBy(b int) {
+	s.Value += b
+	if s.Value > 100 {
+		s.Value = 100
+	}
 }
 
 func writeEvaluationFile(data []stock) (err error) {
@@ -96,7 +125,6 @@ func writeEvaluationFile(data []stock) (err error) {
 
 	err = encoder.Encode(data)
 
-	randomize(data)
 	return err
 }
 
