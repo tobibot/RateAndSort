@@ -20,23 +20,8 @@ var (
 	envFileName   = environment + ".env"
 	finFolder     = ""
 	filePath      = ""
-	stockTypes    = []StockType{hypertech, techindustry, value}
-	stocksByType  = make(map[StockType][]*stock)
-)
 
-type stock struct {
-	Symbol string
-	Name   string
-	Value  int
-	Type   StockType
-}
-
-type StockType string
-
-const (
-	hypertech    StockType = "HyperTech"
-	techindustry StockType = "TechIndustry"
-	value        StockType = "Value"
+	stocksByType = make(map[StockType][]*stock)
 )
 
 func init() {
@@ -48,17 +33,18 @@ func StartRating() {
 	finFolder = os.Getenv("FINFOLDER")
 	filePath = path.Join(finFolder, environment, "config", inputFileName)
 
-	entries, err := readEvaluationFile()
-	if err != nil {
-		log.Fatal()
-	}
-
-	playTheGame(entries)
+	playTheGame()
 }
 
-func playTheGame(stocks []stock) {
+func playTheGame() {
 	for {
+		stocks, err := readEvaluationFile()
+		if err != nil {
+			log.Fatal()
+		}
+
 		randomize(stocks)
+		randomizeTypes(stockTypes)
 
 		for _, t := range stockTypes {
 			stocksByType[t] = make([]*stock, 0)
@@ -103,17 +89,18 @@ func playTheGame(stocks []stock) {
 				case "quit":
 					fallthrough
 				case "exit":
-					exit()
+					writeData()
 					return
 				default:
 					fmt.Println("bad input - no rating made")
 				}
 			}
 		}
+		writeData()
 	}
 }
 
-func exit() {
+func writeData() {
 	newStocks := make([]stock, 0)
 	for _, t := range stockTypes {
 		sortStocks(stocksByType[t])
@@ -127,41 +114,14 @@ func exit() {
 	}
 }
 
-func GetRealStock(stocks []stock, s *stock) *stock {
-	for _, stock := range stocks {
-		if stock.Symbol == s.Symbol {
-			return &stock
-		}
-	}
-	return nil
-}
-
-func makeEvaluation(i *stock, d *stock, v int) bool {
-	fmt.Println(i.Name, i.Value, "->", i.Value+v)
-	fmt.Println(d.Name, d.Value, "->", d.Value-v)
-
+func makeEvaluation(i *stock, d *stock, v int) {
+	//fmt.Printf("increased %s from %d to %d\n", i.Symbol, i.Value, i.Value + v)
+	//fmt.Printf("decreased %s from %d to %d\n", d.Symbol, d.Value, d.Value - v)
 	i.increaseBy(v)
 	d.decreaseBy(v)
-
-	return true
-}
-
-func (s *stock) decreaseBy(b int) {
-	s.Value -= b
-	if s.Value < 0 {
-		s.Value = 0
-	}
-}
-
-func (s *stock) increaseBy(b int) {
-	s.Value += b
-	if s.Value > 100 {
-		s.Value = 100
-	}
 }
 
 func writeEvaluationFile(data []stock) (err error) {
-
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
@@ -208,6 +168,11 @@ func readEvaluationFile() ([]stock, error) {
 }
 
 func randomize(data []stock) {
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(data), func(i, j int) { data[i], data[j] = data[j], data[i] })
+}
+
+func randomizeTypes(data []StockType) {
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(data), func(i, j int) { data[i], data[j] = data[j], data[i] })
 }
