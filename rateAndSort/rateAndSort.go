@@ -20,13 +20,24 @@ var (
 	envFileName   = environment + ".env"
 	finFolder     = ""
 	filePath      = ""
+	stockTypes    = []StockType{hypertech, techindustry, value}
+	stocksByType  = make(map[StockType][]*stock)
 )
 
 type stock struct {
 	Symbol string
 	Name   string
 	Value  int
+	Type   StockType
 }
+
+type StockType string
+
+const (
+	hypertech    StockType = "HyperTech"
+	techindustry StockType = "TechIndustry"
+	value        StockType = "Value"
+)
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -49,53 +60,90 @@ func playTheGame(stocks []stock) {
 	for {
 		randomize(stocks)
 
-		for i := 0; i < len(stocks); i += 2 {
-			if i+1 == len(stocks) {
-				continue
+		for _, t := range stockTypes {
+			stocksByType[t] = make([]*stock, 0)
+			for _, stock := range stocks {
+				stock1 := stock
+				if stock.Type == t {
+					stocksByType[t] = append(stocksByType[t], &stock1)
+				}
 			}
-			stock1 := &stocks[i]
-			stock2 := &stocks[i+1]
-			msg := fmt.Sprintf("\nWhich one do you prefer?\n"+
-				"\t(a) %s\n"+
-				"\t(b) %s\n", stock1.Name, stock2.Name)
-			fmt.Println(msg)
+		}
 
-			text := ""
-			fmt.Scanln(&text)
+		for _, t := range stockTypes {
+			for i := 0; i < len(stocksByType[t]); i += 2 {
+				if i+1 == len(stocksByType[t]) {
+					continue
+				}
+				stock1 := stocksByType[t][i]
+				stock2 := stocksByType[t][i+1]
+				msg := fmt.Sprintf("\nWhich one do you prefer?\n"+
+					"\t(a) %s\n"+
+					"\t(b) %s\n", stock1.Name, stock2.Name)
+				fmt.Println(msg)
 
-			switch text {
-			case "aa":
-				makeEvaluation(stocks, stock1, stock2, 2)
-				break
-			case "a":
-				makeEvaluation(stocks, stock1, stock2, 1)
-				break
-			case "bb":
-				makeEvaluation(stocks, stock2, stock1, 2)
-				break
-			case "b":
-				makeEvaluation(stocks, stock2, stock1, 1)
-				break
-			case "x":
-				fallthrough
-			case "quit":
-				fallthrough
-			case "exit":
-				sortStocks(stocks)
-				writeEvaluationFile(stocks)
-				return
-			default:
-				fmt.Println("bad input - no rating made")
+				text := ""
+				fmt.Scanln(&text)
+
+				switch text {
+				case "aa":
+					makeEvaluation(stock1, stock2, 2)
+					break
+				case "a":
+					makeEvaluation(stock1, stock2, 1)
+					break
+				case "bb":
+					makeEvaluation(stock2, stock1, 2)
+					break
+				case "b":
+					makeEvaluation(stock2, stock1, 1)
+					break
+				case "x":
+					fallthrough
+				case "quit":
+					fallthrough
+				case "exit":
+					exit()
+					return
+				default:
+					fmt.Println("bad input - no rating made")
+				}
 			}
 		}
 	}
-
 }
 
-func makeEvaluation(stocks []stock, i *stock, d *stock, v int) {
+func exit() {
+	newStocks := make([]stock, 0)
+	for _, t := range stockTypes {
+		sortStocks(stocksByType[t])
+		for _, s := range stocksByType[t] {
+			newStocks = append(newStocks, *s)
+		}
+	}
+	err := writeEvaluationFile(newStocks)
+	if err != nil {
+		log.Printf("Error writing ev-File: %v\n", err)
+	}
+}
+
+func GetRealStock(stocks []stock, s *stock) *stock {
+	for _, stock := range stocks {
+		if stock.Symbol == s.Symbol {
+			return &stock
+		}
+	}
+	return nil
+}
+
+func makeEvaluation(i *stock, d *stock, v int) bool {
+	fmt.Println(i.Name, i.Value, "->", i.Value+v)
+	fmt.Println(d.Name, d.Value, "->", d.Value-v)
+
 	i.increaseBy(v)
 	d.decreaseBy(v)
-	writeEvaluationFile(stocks)
+
+	return true
 }
 
 func (s *stock) decreaseBy(b int) {
@@ -164,13 +212,8 @@ func randomize(data []stock) {
 	rand.Shuffle(len(data), func(i, j int) { data[i], data[j] = data[j], data[i] })
 }
 
-func sortStocks(data []stock) {
+func sortStocks(data []*stock) {
 	sort.SliceStable(data, func(i, j int) bool {
 		return data[i].Value > data[j].Value
 	})
-}
-
-func sortThenQuit(data []stock) {
-	sortStocks(data)
-	writeEvaluationFile(data)
 }
