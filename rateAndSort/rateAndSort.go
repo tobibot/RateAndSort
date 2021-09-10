@@ -57,6 +57,7 @@ func playTheGame() {
 		}
 
 		for _, t := range stockTypes {
+			fmt.Printf("Starting type '%v'\n", t)
 			for i := 0; i < len(stocksByType[t]); i += 2 {
 				if i+1 == len(stocksByType[t]) {
 					continue
@@ -65,7 +66,7 @@ func playTheGame() {
 				stock2 := stocksByType[t][i+1]
 				msg := fmt.Sprintf("\nWhich one do you prefer?\n"+
 					"\t(a) %s\n"+
-					"\t(b) %s\n", stock1.Name, stock2.Name)
+					"\t(b) %s", stock1.Name, stock2.Name)
 				fmt.Println(msg)
 
 				text := ""
@@ -96,6 +97,7 @@ func playTheGame() {
 				}
 			}
 		}
+		fmt.Println("writing results to file")
 		writeData()
 	}
 }
