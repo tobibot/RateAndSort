@@ -57,7 +57,7 @@ func playTheGame() {
 		}
 
 		for _, t := range stockTypes {
-			fmt.Printf("Starting type '%v'\n", t)
+			fmt.Printf("\nStarting type '%v'\n", t)
 			for i := 0; i < len(stocksByType[t]); i += 2 {
 				if i+1 == len(stocksByType[t]) {
 					continue
