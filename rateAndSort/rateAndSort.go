@@ -70,7 +70,7 @@ func playTheGame() {
 				fmt.Println(msg)
 
 				text := ""
-				fmt.Scanln(&text)
+				_, _ = fmt.Scanln(&text)
 
 				switch text {
 				case "aa":
@@ -129,7 +129,7 @@ func writeEvaluationFile(data []stock) (err error) {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "\t")
@@ -141,7 +141,7 @@ func writeEvaluationFile(data []stock) (err error) {
 
 func readEvaluationFile() ([]stock, error) {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		os.Create(filePath)
+		_, _ = os.Create(filePath)
 		return make([]stock, 0), err
 	}
 
@@ -150,7 +150,7 @@ func readEvaluationFile() ([]stock, error) {
 		return make([]stock, 0), err
 	}
 
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	byteValue, err := ioutil.ReadAll(file)
 
 	if err != nil {
