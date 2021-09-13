@@ -96,6 +96,7 @@ func playTheGame() {
 					fmt.Println("bad input - no rating made")
 				}
 			}
+			fmt.Println()
 		}
 		fmt.Println("writing results to file")
 		writeData()
