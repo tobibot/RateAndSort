@@ -7,6 +7,7 @@ import (
 )
 
 func Test_SortAndThenWriteFile(t *testing.T) {
+	t.Skip("This is an integration test :)")
 	evalFile := "evaluation.json"
 	filePath = evalFile
 	tData := getStocksByType()
