@@ -10,13 +10,14 @@ type stock struct {
 type StockType string
 
 var (
-	stockTypes = []StockType{hypertech, techindustry, value}
+	stockTypes = []StockType{hyperTech, techIndustry, value, highRisk}
 )
 
 const (
-	hypertech    StockType = "HyperTech"
-	techindustry StockType = "TechIndustry"
+	hyperTech    StockType = "HyperTech"
+	techIndustry StockType = "TechIndustry"
 	value        StockType = "Value"
+	highRisk     StockType = "HighRisk"
 )
 
 func (s *stock) decreaseBy(b int) {

@@ -16,12 +16,10 @@ import (
 
 var (
 	inputFileName = "evaluation.json" // todo args / flags
-	environment   = "prod"
+	environment   = "test"
 	envFileName   = environment + ".env"
 	finFolder     = ""
 	filePath      = ""
-
-	stocksByType = make(map[StockType][]*stock)
 )
 
 func init() {
@@ -36,25 +34,33 @@ func StartRating() {
 	playTheGame()
 }
 
-func playTheGame() {
-	for {
-		stocks, err := readEvaluationFile()
-		if err != nil {
-			log.Fatal()
-		}
+func getStocksByType() map[StockType][]*stock {
+	stocksByType := make(map[StockType][]*stock)
 
-		randomize(stocks)
-		randomizeTypes(stockTypes)
+	stocks, err := readEvaluationFile()
+	if err != nil {
+		log.Fatal()
+	}
 
-		for _, t := range stockTypes {
-			stocksByType[t] = make([]*stock, 0)
-			for _, stock := range stocks {
-				stock1 := stock
-				if stock.Type == t {
-					stocksByType[t] = append(stocksByType[t], &stock1)
-				}
+	randomize(stocks)
+	randomizeTypes(stockTypes)
+
+	for _, t := range stockTypes {
+		stocksByType[t] = make([]*stock, 0)
+		for _, stock := range stocks {
+			stock1 := stock
+			if stock.Type == t {
+				stocksByType[t] = append(stocksByType[t], &stock1)
 			}
 		}
+	}
+
+	return stocksByType
+}
+
+func playTheGame() {
+	for {
+		stocksByType := getStocksByType()
 
 		for _, t := range stockTypes {
 			fmt.Printf("\nStarting type '%v'\n", t)
@@ -90,7 +96,7 @@ func playTheGame() {
 				case "quit":
 					fallthrough
 				case "exit":
-					writeData()
+					writeData(nil)
 					return
 				default:
 					fmt.Println("bad input - no rating made")
@@ -99,11 +105,11 @@ func playTheGame() {
 			fmt.Println()
 		}
 		fmt.Println("writing results to file")
-		writeData()
+		_ = writeData(stocksByType)
 	}
 }
 
-func writeData() {
+func writeData(stocksByType map[StockType][]*stock) error {
 	newStocks := make([]stock, 0)
 	for _, t := range stockTypes {
 		sortStocks(stocksByType[t])
@@ -114,7 +120,9 @@ func writeData() {
 	err := writeEvaluationFile(newStocks)
 	if err != nil {
 		log.Printf("Error writing ev-File: %v\n", err)
+		return err
 	}
+	return nil
 }
 
 func makeEvaluation(i *stock, d *stock, v int) {
@@ -129,14 +137,14 @@ func writeEvaluationFile(data []stock) (err error) {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = file.Close() }()
-
+	defer file.Close()
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "\t")
-
 	err = encoder.Encode(data)
-
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func readEvaluationFile() ([]stock, error) {
