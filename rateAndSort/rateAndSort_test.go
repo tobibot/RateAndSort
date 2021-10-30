@@ -7,7 +7,7 @@ import (
 )
 
 func Test_SortAndThenWriteFile(t *testing.T) {
-	evalFile := "/home/tobi/Nextcloud/tobibot/finance/test/config/evaluation.json"
+	evalFile := "evaluation.json"
 	filePath = evalFile
 	tData := getStocksByType()
 
@@ -32,7 +32,7 @@ func Test_SortAndThenWriteFile(t *testing.T) {
 }
 
 func Test_writeEvaluationFile(t *testing.T) {
-	testFileName := "/home/tobi/Nextcloud/tobibot/finance/test/config/evaluation.json"
+	testFileName := "evaluation.json"
 	deleteFile := false
 	fakeData := false
 	nOfStockTypes := 4
