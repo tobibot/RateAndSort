@@ -14,7 +14,7 @@ import (
 
 var (
 	inputFileName = "evaluation.json" // todo args / flags
-	environment   = "test"
+	environment   = "prod"
 	envFileName   = environment + ".env"
 	finFolder     = ""
 	filePath      = ""
@@ -74,7 +74,7 @@ func playTheGame() {
 				fmt.Println(msg)
 
 				text := ""
-				 _, _ = fmt.Scanln(&text)
+				_, _ = fmt.Scanln(&text)
 				// time.Sleep(1 * time.Second)
 				// if time.Second%2 == 0 {
 				// 	text = "a"
