@@ -1,9 +1,7 @@
 package rateAndSort
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -76,27 +74,26 @@ func playTheGame() {
 				fmt.Println(msg)
 
 				text := ""
-				_, _ = fmt.Scanln(&text)
+				 _, _ = fmt.Scanln(&text)
+				// time.Sleep(1 * time.Second)
+				// if time.Second%2 == 0 {
+				// 	text = "a"
+				// } else {
+				// 	text = "b"
+				// }
+				// text = "x"
 
 				switch text {
 				case "aa":
 					makeEvaluation(stock1, stock2, 2)
-					break
 				case "a":
 					makeEvaluation(stock1, stock2, 1)
-					break
 				case "bb":
 					makeEvaluation(stock2, stock1, 2)
-					break
 				case "b":
 					makeEvaluation(stock2, stock1, 1)
-					break
-				case "x":
-					fallthrough
-				case "quit":
-					fallthrough
-				case "exit":
-					writeData(nil)
+				case "x", "q", "quit", "exit":
+					writeData(stocksByType)
 					return
 				default:
 					fmt.Println("bad input - no rating made")
@@ -109,73 +106,9 @@ func playTheGame() {
 	}
 }
 
-func writeData(stocksByType map[StockType][]*stock) error {
-	newStocks := make([]stock, 0)
-	for _, t := range stockTypes {
-		sortStocks(stocksByType[t])
-		for _, s := range stocksByType[t] {
-			newStocks = append(newStocks, *s)
-		}
-	}
-	err := writeEvaluationFile(newStocks)
-	if err != nil {
-		log.Printf("Error writing ev-File: %v\n", err)
-		return err
-	}
-	return nil
-}
-
 func makeEvaluation(i *stock, d *stock, v int) {
-	//fmt.Printf("increased %s from %d to %d\n", i.Symbol, i.Value, i.Value + v)
-	//fmt.Printf("decreased %s from %d to %d\n", d.Symbol, d.Value, d.Value - v)
 	i.increaseBy(v)
 	d.decreaseBy(v)
-}
-
-func writeEvaluationFile(data []stock) (err error) {
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "\t")
-	err = encoder.Encode(data)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func readEvaluationFile() ([]stock, error) {
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		_, _ = os.Create(filePath)
-		return make([]stock, 0), err
-	}
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		return make([]stock, 0), err
-	}
-
-	defer func() { _ = file.Close() }()
-	byteValue, err := ioutil.ReadAll(file)
-
-	if err != nil {
-		return make([]stock, 0), err
-	}
-
-	data := make([]stock, 0)
-
-	if len(byteValue) == 0 {
-		return make([]stock, 0), fmt.Errorf("file contains no data")
-	}
-
-	err = json.Unmarshal(byteValue, &data)
-	if err != nil {
-		return make([]stock, 0), err
-	}
-	return data, nil
 }
 
 func randomize(data []stock) {
